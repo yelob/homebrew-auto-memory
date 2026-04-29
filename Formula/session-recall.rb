@@ -1,6 +1,4 @@
 class SessionRecall < Formula
-  include Language::Python::Virtualenv
-
   desc "Session memory recall for AI coding agents"
   homepage "https://github.com/yelob/auto-memory"
   url "https://github.com/yelob/auto-memory.git",
@@ -8,12 +6,13 @@ class SessionRecall < Formula
       revision: "22719404f6986db989deecb757d303a8c36be16b"
   license "MIT"
 
-  depends_on "python@3"
-
   def install
-    virtualenv_create(libexec, "python3")
-    system libexec/"bin/pip", "install", *std_pip_args(prefix: libexec), "."
-    bin.install_symlink libexec/"bin/session-recall"
+    libexec.install Dir["src/*"]
+    (bin/"session-recall").write <<~SCRIPT
+      #!/bin/bash
+      export PYTHONPATH="#{libexec}${PYTHONPATH:+:$PYTHONPATH}"
+      exec python3 -m session_recall "$@"
+    SCRIPT
   end
 
   test do
